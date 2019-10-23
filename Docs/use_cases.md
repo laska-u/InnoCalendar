@@ -4,7 +4,7 @@
 | --- | --- |
 | Actors | Student, Bot |
 | Pre-conditions | The student must have a telegram account </br> The elective course schedule should be available on Google sheets |
-| Flow of Events | 1. The user sends the initiating command to the Telegram bot </br> 2. Telegram verifies if the user sent the right command </br> 3. Telegram bot responds by sending a list of UI elements to choose course, view entire elective course sheet
+| Flow of Events | 1. The user sends the initiating command to the Telegram bot </br> 2.<a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L85-L111"> Telegram verifies if the user sent the right command </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L85-L111"> Telegram bot responds by sending a list of UI elements to choose course, view entire elective course sheet </a>
 | Post-conditions | User is registered in InnoCalendat bot |
 | Alternate flows and exceptions | The user doesn&#39;t send the right command |
 | Assumption | The user has a Telegram account 
@@ -13,7 +13,7 @@
 | --- | --- |
 | Actors | Student,Telegram bot |
 | Pre-condition | Students sends the right command to initiate communication with bot |
-| Flow of Events | 1. The student clicks on the button to view all courses </br> 2. The telegram bot sends a link to the google sheet containing elective course  |
+| Flow of Events | 1. The student clicks on the button to view all courses </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L153-L162"> The telegram bot sends a link to the google sheet containing elective course </a> |
 | Post-conditions | User gets link for google sheet of entire elective course |
 | Alternate flows and exceptions | 1. The user doesn&#39;t send the right command to the telegram bot </br> 2. The user doesn&#39;t have internet connection on his phone and link fails to load  |
 | Assumption | The user has internet connection on his phone as to load the page containing google sheet |
@@ -22,7 +22,7 @@
 | --- | --- |
 | Actors | Student, Telegram bot |
 | Pre-condition | User sends the right command to initiate communication with bot <br> Course to be registered by student exists |
-| Flow of Events | 1. The student initiates communication with telegram bot </br> 2. Telegram bot sends lists of buttons to choose exact course for notifications </br> 3. When the user is provided with the intended course, the user can register for it by clicking on the course button. User can click on course button again to cancel registration for this course. </br> |
+| Flow of Events | 1. The student initiates communication with telegram bot </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L188-L200"> Telegram bot sends lists of buttons to choose exact course for notifications </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L115-L131"> When the user is provided with the intended course, the user can register for it by clicking on the course button. User can click on course button again to cancel registration for this course. </a> </br> |
 | Post-conditions | Information about user's choice saved in internal database |
 | Alternate flows and exceptions | Telegram bot fails to save user's choice details into database because the phone was out of network coverage  |
 | Assumption | The course intended to be registered for is found |
@@ -41,7 +41,7 @@
 | --- | --- |
 | Actors | Telegram bot, Student |
 | Pre-condition | Students must be registered for the course to be notified |
-| Flow of Events | 1. The telegram bot scans the database every 5 min </br> 2. If after scanning the database, the bot notices that a course is scheduled to start in an hour, the telegram bot sends a notification to students that registered for that course </br> 3. A notification with the course details are sent to the user |
+| Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Parser.java#L128-L195"> The telegram bot scans the database every 5 min </a> </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L44-L49"> If after scanning the database, the bot notices that a course is scheduled to start in an hour, the telegram bot sends a notification to students that registered for that course </br> 3. A notification with the course details are sent to the user </a> |
 | Post-conditions | Notification is sent by telegram bot to user&#39;s(student) phone |
 | Alternate flows and exceptions | 1. The user doesnt receive the notification because his internet connection is turned off and misses the class </br> 2. Telegram&#39;s server is down and bots are inactive  |
 | Assumption | The user will receive the notification early enough to prepare for class |
