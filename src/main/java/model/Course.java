@@ -2,29 +2,42 @@ package model;
 
 import javax.persistence.*;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Entity
+@Table(name = "\"Courses\"")
 public class Course {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     private String name;
 
-    @ManyToMany(mappedBy = "user_id")
-    private Set<User> users = new HashSet<>();
+    public Course(Course course) {
+    }
 
-    @OneToMany(mappedBy = "course_id", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    private Set<Class> classes = new HashSet<Class>();
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    private List<User> users;
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(List<User> users) {
+        this.users = users;
+    }
 
     public void setId(long id) {
         this.id = id;
     }
 
     public Course() {
+    }
 
+    public Course(String name, long id) {
+        this.name = name;
+        this.id = id;
     }
 
     public long getId() {
@@ -33,22 +46,6 @@ public class Course {
 
     public void setId(int id) {
         this.id = id;
-    }
-
-    public Set<Class> getClasses() {
-        return classes;
-    }
-
-    public void setClasses(Set<Class> classes) {
-        this.classes = classes;
-    }
-
-    public Set<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(Set<User> users) {
-        this.users = users;
     }
 
     public String getName() {

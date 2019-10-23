@@ -33,9 +33,7 @@ public class UserService {
         return usersDao.findAll();
     }
 
-    public Course findAutoById(int id) {
-        return usersDao.findCourseById(id);
-    }
+
 
 
 }

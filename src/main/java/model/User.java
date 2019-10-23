@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@Table(name = "\"Users\"")
 public class User {
 
     @Id
@@ -14,13 +15,17 @@ public class User {
 
     private long chat_id;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
-    @JoinTable(
-            name = "user_course",
-            joinColumns = { @JoinColumn(name = "user_id") },
-            inverseJoinColumns = { @JoinColumn(name = "course_id") }
-    )
-    Set<Course> courses = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "course_id")
+    private Course course;
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
 
     public User() {
     }
@@ -28,7 +33,6 @@ public class User {
     public User(long id, long chat_id) {
         this.id = id;
         this.chat_id = chat_id;
-        courses = new HashSet<>();
     }
 
     public long getChat_id() {
@@ -45,14 +49,6 @@ public class User {
 
     public void setId(long id) {
         this.id = id;
-    }
-
-    public Set<Course> getCourses() {
-        return courses;
-    }
-
-    public void setCourses(Set<Course> courses) {
-        this.courses = courses;
     }
 
     @Override

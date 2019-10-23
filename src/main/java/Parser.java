@@ -18,10 +18,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.*;
 
 public class Parser {
 
@@ -38,6 +38,7 @@ public class Parser {
 
     /**
      * Creates an authorized Credential object.
+     *
      * @param HTTP_TRANSPORT The network HTTP Transport.
      * @return An authorized Credential object.
      * @throws IOException If the credentials.json file cannot be found.
@@ -90,7 +91,6 @@ public class Parser {
         if (values == null || values.isEmpty()) {
             System.out.println("No data found.");
         } else {
-//            System.out.println("Name, Major");
             for (int i = 0; i < values.get(0).size(); i++) {
 
                 System.out.println(values.get(0).get(i));
@@ -99,6 +99,7 @@ public class Parser {
 
 
     }
+
 
     public static List<String> getFirstRow() throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
@@ -118,9 +119,77 @@ public class Parser {
         } else {
             for (int i = 0; i < values.get(0).size(); i++) {
                 courses.add((String) values.get(0).get(i));
-//                System.out.println(values.get(0).get(i));
             }
         }
         return courses;
+    }
+
+
+    public static HashMap<Integer, String> getCoursesByDatetime() throws IOException, GeneralSecurityException {
+        // Build a new authorized API client service.
+        LocalDate localDate = LocalDate.now();
+        LocalTime localTime = LocalTime.now().plus(Duration.ofHours(1));
+        int rowIndex = 1;
+        List<String> courses = new ArrayList<>();
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
+        final String daysRange = "A1:A800";
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ValueRange response = service.spreadsheets().values()
+                .get(spreadsheetId, daysRange)
+                .execute();
+        List<List<Object>> values = response.getValues();
+        if (values == null || values.isEmpty()) {
+            System.out.println("No data found.");
+        } else {
+            System.out.println(localDate);
+            System.out.println(values);
+            for (int i = 0; i < values.size(); i++) {
+
+                if (!values.get(i).isEmpty() && localDate.toString().equals(values.get(i).get(0).toString())) {
+                    rowIndex = i + 1;
+                    System.out.println(rowIndex);
+                }
+            }
+        }
+
+        final String timeRange = "D" + rowIndex + ":D" + (rowIndex + 7);
+        System.out.println(timeRange);
+        response = service.spreadsheets().values()
+                .get(spreadsheetId, timeRange)
+                .execute();
+        values = response.getValues();
+        if (values == null || values.isEmpty()) {
+            System.out.println("No data found.");
+        } else {
+            for (int i = 0; i < values.size(); i++) {
+                LocalTime endTime = LocalTime.parse(values.get(i).get(0).toString().split("-")[0]);
+                LocalTime startTime = endTime.minus(Duration.ofMinutes(5));
+                //LocalTime endTime = LocalTime.parse(values.get(i).get(0).toString().split("-")[1]);
+                if (startTime.isBefore(localTime) && endTime.isAfter(localTime)) {
+                    rowIndex = rowIndex + i;
+                }
+            }
+        }
+
+        HashMap<Integer, String> currentCourses = new HashMap<Integer, String>();
+
+        final String courseRange = "E" + rowIndex + ":AO" + rowIndex;
+        response = service.spreadsheets().values()
+                .get(spreadsheetId, courseRange)
+                .execute();
+        values = response.getValues();
+        if (values == null || values.isEmpty()) {
+            System.out.println("No data found.");
+        } else {
+            for (int i = 0; i < values.get(0).size(); i++) {
+                if (values.get(0).get(i) != "") {
+                    currentCourses.put(i, values.get(0).get(i).toString());
+                }
+            }
+        }
+        return currentCourses;
     }
 }

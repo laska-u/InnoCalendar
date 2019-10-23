@@ -5,45 +5,46 @@ import model.User;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import utils.HibernateSessionFactoryUtil;
+
 import java.util.List;
 
-public class UserDao {
+public class CourseDao {
 
-    public User findById(long id) {
-        Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
-        User user = session.get(User.class, id);
-        session.close();
-        return user;
+    public Course findById(long id) {
+        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Course.class, id);
     }
 
-    public void save(User user) {
+    public void save(Course course) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.save(user);
+        session.save(course);
         tx1.commit();
         session.close();
     }
 
-    public void update(User user) {
+    public void update(Course course) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.update(user);
+        session.update(course);
         tx1.commit();
         session.close();
     }
 
-    public void delete(User user) {
+    public void delete(Course course) {
         Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
         Transaction tx1 = session.beginTransaction();
-        session.delete(user);
+        session.delete(course);
         tx1.commit();
         session.close();
     }
 
-
-
-    public List<User> findAll() {
-        List<User> users = (List<User>)  HibernateSessionFactoryUtil.getSessionFactory().openSession().createQuery("from model.User").list();
-        return users;
+    public List<Course> findAll() {
+        List<Course> courses = (List<Course>)  HibernateSessionFactoryUtil.getSessionFactory().openSession().createQuery("from model.Course").list();
+        return courses;
     }
+
+    public Course findCourseById(int id) {
+        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Course.class, id);
+    }
+
 }
