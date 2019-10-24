@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
+import java.sql.SQLOutput;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -80,7 +81,73 @@ public class Parser {
         // Build a new authorized API client service.
         final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
         final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
-        final String range = "E1:AO1";
+        final String range = "E2:AO721";
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ValueRange response = service.spreadsheets().values()
+                .get(spreadsheetId, range)
+                .execute();
+        List<List<Object>> values1 = response.getValues();
+        if (values1 == null || values1.isEmpty()) {
+            System.out.println("No data found.");
+        }
+
+        System.out.println("first complete");
+
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        response = service.spreadsheets().values()
+                .get(spreadsheetId, range)
+                .execute();
+
+        System.out.println("second complete");
+
+        List<List<Object>> values2 = response.getValues();
+        if (values2 == null || values2.isEmpty()) {
+            System.out.println("No data found.");
+        }
+            for (int i = 0; i < values1.size(); i++) {
+                for (int j = 0; j < values1.get(i).size(); j++) {
+                    if (((String)(values1.get(i).get(j))).equals((String)(values2.get(i).get(j)))) {
+//                        System.out.println("same");
+                    } else {
+                        System.out.println("diffrent i:" + i + "j: " + j);
+                    }
+                }
+            }
+
+
+    }
+
+    private static List<List<Object>> values1 = new ArrayList<>();
+
+    public static void  initTableLoad() throws GeneralSecurityException, IOException {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
+        final String range = "E2:AO721";
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        ValueRange response = service.spreadsheets().values()
+                .get(spreadsheetId, range)
+                .execute();
+        values1 = response.getValues();
+        if (values1 == null || values1.isEmpty()) {
+            System.out.println("No data found.");
+        }
+    }
+
+    public static List<Integer> getChangesCoursesIds() throws IOException, GeneralSecurityException {
+
+        List<Integer> changesIds = new ArrayList<>();
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
+        final String range = "E2:AO721";
         Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
                 .setApplicationName(APPLICATION_NAME)
                 .build();
@@ -90,14 +157,18 @@ public class Parser {
         List<List<Object>> values = response.getValues();
         if (values == null || values.isEmpty()) {
             System.out.println("No data found.");
-        } else {
-            for (int i = 0; i < values.get(0).size(); i++) {
-
-                System.out.println(values.get(0).get(i));
+        }
+        for (int i = 0; i < values.size(); i++) {
+            for (int j = 0; j < values.get(i).size(); j++) {
+                if (((String)(values.get(i).get(j))).equals((String)(values1.get(i).get(j)))) {
+                } else {
+                    System.out.println("diffrent i:" + i + "j: " + j);
+                    changesIds.add(j);
+                    values1.get(i).set(j, (values.get(i).get(j)));
+                }
             }
         }
-
-
+        return changesIds;
     }
 
 

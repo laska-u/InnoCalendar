@@ -6,7 +6,6 @@ import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -20,7 +19,9 @@ import service.UserService;
 
 import java.io.IOException;
 import java.security.GeneralSecurityException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Bot extends TelegramLongPollingBot {
 
@@ -33,12 +34,25 @@ public class Bot extends TelegramLongPollingBot {
 
     //https://api.telegram.org/bot930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo/getUpdates
     public static void main(String[] args) {
+        int reminders_count = 0;
         ApiContextInitializer.init();
+        try {
+            Parser.initTableLoad();
+        } catch (GeneralSecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         TelegramBotsApi telegramBotsApi = new TelegramBotsApi();
         try {
             Bot myBot = new Bot();
             telegramBotsApi.registerBot(new Bot());
             while (true) {
+                try {
+                    Thread.sleep(REMINDER_INTERVAL);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 try {
                     HashMap<Integer, String> currentCourses = Parser.getCoursesByDatetime();
                     for (User user : userService.findAllUsers()) {
@@ -48,9 +62,22 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                     }
-                    Thread.sleep(REMINDER_INTERVAL);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                //Start checking changes if 6 reminders passed by, because 6*300000 = 30 min
+                reminders_count++;
+                    if (reminders_count == 6) {
+                    reminders_count = 0;
+                    List<Integer> changesIds = Parser.getChangesCoursesIds();
+                    for (User user : userService.findAllUsers()) {
+                        System.out.println("user id" + user.getId());
+                        for (int courseId : changesIds) {
+                            System.out.println("Course ID:" + courseId);
+                            Course course = userService.getCourseById(user, courseId);
+                            if (course!=null) {
+                                myBot.sendMsg(user.getChat_id(), "\u2757 Changes in your course: " + course.getName());
+                            }
+                        }
+                    }
+                }
                 } catch (GeneralSecurityException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -61,8 +88,6 @@ public class Bot extends TelegramLongPollingBot {
         } catch (TelegramApiRequestException e) {
             e.printStackTrace();
         }
-
-
     }
 
     public void onUpdateReceived(Update update) {
@@ -199,7 +224,7 @@ public class Bot extends TelegramLongPollingBot {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
-        sendMessage.setText("Click to any course below to subscribe for it \u2705");
+        sendMessage.setText("Click to any course below to subscribe for it:");
         setInline(sendMessage);
         try {
             execute(sendMessage);
