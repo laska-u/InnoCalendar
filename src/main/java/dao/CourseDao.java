@@ -38,6 +38,8 @@ public class CourseDao {
         session.close();
     }
 
+
+
     public List<Course> findAll() {
         List<Course> courses = (List<Course>)  HibernateSessionFactoryUtil.getSessionFactory().openSession().createQuery("from model.Course").list();
         return courses;

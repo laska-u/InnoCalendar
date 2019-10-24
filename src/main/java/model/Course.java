@@ -17,16 +17,8 @@ public class Course {
     public Course(Course course) {
     }
 
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-    private List<User> users;
-
-    public List<User> getUsers() {
-        return users;
-    }
-
-    public void setUsers(List<User> users) {
-        this.users = users;
-    }
+    @ManyToMany(mappedBy = "courses")
+    private Set<User> users = new HashSet<>();
 
     public void setId(long id) {
         this.id = id;
@@ -44,8 +36,12 @@ public class Course {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public Set<User> getUsers() {
+        return users;
+    }
+
+    public void setUsers(Set<User> users) {
+        this.users = users;
     }
 
     public String getName() {
