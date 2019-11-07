@@ -4,8 +4,10 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -18,6 +20,7 @@ import service.CourseService;
 import service.UserService;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,6 +34,14 @@ public class Bot extends TelegramLongPollingBot {
     private CourseService courseService = new CourseService();
     private static final long ADMIN_ID = 273255483;
     private static final int REMINDER_INTERVAL = 300000;
+
+    void setParser(Parser parser) {
+        this.parser = parser;
+    }
+
+    static void setUserService(UserService userService) {
+        Bot.userService = userService;
+    }
 
     //https://api.telegram.org/bot930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo/getUpdates
     public static void main(String[] args) {
@@ -90,7 +101,7 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public void onUpdateReceived(Update update) {
+    BotApiMethod<? extends Serializable> getMethod(Update update) {
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -119,8 +130,7 @@ public class Bot extends TelegramLongPollingBot {
                     sendMsg(chat_id, SPREAD_SHEET);
                     break;
                 case "Choose course":
-                    sendCourses(chat_id);
-                    break;
+                    return sendCourses(chat_id);
                 case "Finish choosing process":
                     sendMsg(chat_id);
                     break;
@@ -165,18 +175,21 @@ public class Bot extends TelegramLongPollingBot {
 
             InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
             markupKeyboard.setKeyboard(buttons);
-                EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
-                        .setChatId(chat_id)
-                        .setMessageId(Math.toIntExact(message_id))
-                        .setReplyMarkup(markupKeyboard);
-                try {
-                    execute(murkup_message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-//            }
+            EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
+                    .setChatId(chat_id)
+                    .setMessageId(Math.toIntExact(message_id))
+                    .setReplyMarkup(markupKeyboard);
+            return murkup_message;
         }
+        return null;
+    }
 
+    public void onUpdateReceived(Update update) {
+        try {
+            execute(getMethod(update));
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveCoursesInDataBase() {
@@ -220,16 +233,13 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public synchronized void sendCourses(long chatId) {
+    public synchronized SendMessage sendCourses(long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
         sendMessage.setText("Click to any course below to subscribe for it:");
         setInline(sendMessage);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-        }
+        return sendMessage;
     }
 
     public synchronized void setButtons(SendMessage sendMessage) {
