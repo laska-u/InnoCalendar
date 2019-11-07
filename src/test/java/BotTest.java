@@ -63,7 +63,7 @@ class BotTest {
     public void testGetCourses(Map<Course, Boolean> subscribedTo) {
         Bot bot = new Bot();
         Parser parserMock = mock(Parser.class);
-        when(parserMock.getCourses()).thenReturn(subscribedTo.keySet().stream().map(Course::getName).collect(Collectors.toList()));
+        when(parserMock.getCourses()).thenReturn(subscribedTo.keySet().stream().sorted((x, y) -> (int) (y.getId() - x.getId())).map(Course::getName).collect(Collectors.toList()));
 
         User chooseCoursesUser = mock(User.class);
         when(chooseCoursesUser.getId()).thenReturn((int) USER_ID);
