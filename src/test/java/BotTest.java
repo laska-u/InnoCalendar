@@ -27,9 +27,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.CoreMatchers.*;
 
 class BotTest {
-
-    Bot bot;
-
     static Stream<Arguments> createSubscriptions() {
         return Stream.of(
                 Arguments.of(
@@ -53,7 +50,7 @@ class BotTest {
     @ParameterizedTest
     @MethodSource("createSubscriptions")
     public void testGetCourses(Map<Course, Boolean> subscribedTo) {
-        bot = new Bot();
+        Bot bot = new Bot();
         Parser parserMock = mock(Parser.class);
         when(parserMock.getCourses()).thenReturn(subscribedTo.keySet().stream().map(Course::getName).collect(Collectors.toList()));
 
