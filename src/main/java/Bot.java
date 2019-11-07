@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
@@ -117,22 +116,20 @@ public class Bot extends TelegramLongPollingBot {
 
             switch (message_text) {
                 case "/start":
-                    sendMsg(chat_id);
                     User user = userService.findUser(user_id);
                     if (user == null) {
                         userService.saveUser(new User(user_id, chat_id));
                         System.out.println("new user registered");
-                    } else {
-                        System.out.println("user registered already");
                     }
-                    break;
+                    System.out.println("user registered already");
+                    return sendMenu(chat_id);
                 case "All courses":
                     sendMsg(chat_id, SPREAD_SHEET);
                     break;
                 case "Choose course":
                     return sendCourses(chat_id);
                 case "Finish choosing process":
-                    sendMsg(chat_id);
+                    sendMenu(chat_id);
                     break;
                 case "Upload Courses":
                     if (user_id == ADMIN_ID) {
@@ -221,16 +218,13 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public synchronized void sendMsg(long chatId) {
+    public synchronized SendMessage sendMenu(long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
         sendMessage.setText("Hello! \u270b\nYou can view schedule or choose elective courses");
         setButtons(sendMessage);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-        }
+        return sendMessage;
     }
 
     public synchronized SendMessage sendCourses(long chatId) {
