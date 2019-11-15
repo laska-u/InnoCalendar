@@ -11,14 +11,12 @@ import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.SheetsScopes;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import org.checkerframework.checker.units.qual.A;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
-import java.sql.SQLOutput;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -36,7 +34,7 @@ public class Parser {
      */
     private static final List<String> SCOPES = Collections.singletonList(SheetsScopes.SPREADSHEETS_READONLY);
     private static final String CREDENTIALS_FILE_PATH = "/credentials.json";
-
+    private static final String SPREADSHEETID = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
     /**
      * Creates an authorized Credential object.
      *
@@ -73,71 +71,16 @@ public class Parser {
         return null;
     }
 
-    /**
-     * Prints the names and majors of students in a sample spreadsheet:
-     * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-     */
-    public static void main(String... args) throws IOException, GeneralSecurityException {
-        // Build a new authorized API client service.
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
-        final String range = "E2:AO721";
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-        List<List<Object>> values1 = response.getValues();
-        if (values1 == null || values1.isEmpty()) {
-            System.out.println("No data found.");
-        }
-
-        System.out.println("first complete");
-
-        try {
-            Thread.sleep(10000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-
-        System.out.println("second complete");
-
-        List<List<Object>> values2 = response.getValues();
-        if (values2 == null || values2.isEmpty()) {
-            System.out.println("No data found.");
-        }
-            for (int i = 0; i < values1.size(); i++) {
-                for (int j = 0; j < values1.get(i).size(); j++) {
-                    if (((String)(values1.get(i).get(j))).equals((String)(values2.get(i).get(j)))) {
-//                        System.out.println("same");
-                    } else {
-                        System.out.println("diffrent i:" + i + "j: " + j);
-                    }
-                }
-            }
-
-
-    }
-
-    private static List<List<Object>> values1 = new ArrayList<>();
+    private static List<List<Object>> VALUES = new ArrayList<>();
 
     public static void  initTableLoad() throws GeneralSecurityException, IOException {
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
         final String range = "E2:AO721";
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+        Sheets service = GetSheets(range);
         ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
+                .get(SPREADSHEETID, range)
                 .execute();
-        values1 = response.getValues();
-        if (values1 == null || values1.isEmpty()) {
+        VALUES = response.getValues();
+        if (VALUES == null || VALUES.isEmpty()) {
             System.out.println("No data found.");
         }
     }
@@ -145,26 +88,15 @@ public class Parser {
     public static List<Integer> getChangesCoursesIds() throws IOException, GeneralSecurityException {
 
         List<Integer> changesIds = new ArrayList<>();
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
-        final String range = "E2:AO721";
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
-        ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute();
-        List<List<Object>> values = response.getValues();
-        if (values == null || values.isEmpty()) {
-            System.out.println("No data found.");
-        }
+
+        List<List<Object>> values = GetMainListData();
         for (int i = 0; i < values.size(); i++) {
             for (int j = 0; j < values.get(i).size(); j++) {
-                if (((String)(values.get(i).get(j))).equals((String)(values1.get(i).get(j)))) {
+                if (((values.get(i).get(j))).equals((VALUES.get(i).get(j)))) {
                 } else {
                     System.out.println("diffrent i:" + i + "j: " + j);
                     changesIds.add(j);
-                    values1.get(i).set(j, (values.get(i).get(j)));
+                    VALUES.get(i).set(j, (values.get(i).get(j)));
                 }
             }
         }
@@ -175,14 +107,10 @@ public class Parser {
     public static List<String> getFirstRow() throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         List<String> courses = new ArrayList<>();
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
         final String range = "E1:AO1";
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+        Sheets service = GetSheets(range);
         ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, range)
+                .get(SPREADSHEETID, range)
                 .execute();
         List<List<Object>> values = response.getValues();
         if (values == null || values.isEmpty()) {
@@ -201,15 +129,9 @@ public class Parser {
         LocalDate localDate = LocalDate.now();
         LocalTime localTime = LocalTime.now().plus(Duration.ofHours(1));
         int rowIndex = 1;
-        List<String> courses = new ArrayList<>();
-        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
-        final String spreadsheetId = "11YgZf49a5olHPqKJTjJODlwiIIDBw9eHg98rfnqu1GE";
-        final String daysRange = "A1:A800";
-        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
-                .setApplicationName(APPLICATION_NAME)
-                .build();
+        Sheets service = GetSheets("A1:A800");
         ValueRange response = service.spreadsheets().values()
-                .get(spreadsheetId, daysRange)
+                .get(SPREADSHEETID, "A1:A800")
                 .execute();
         List<List<Object>> values = response.getValues();
         if (values == null || values.isEmpty()) {
@@ -229,7 +151,7 @@ public class Parser {
         final String timeRange = "D" + rowIndex + ":D" + (rowIndex + 7);
         System.out.println(timeRange);
         response = service.spreadsheets().values()
-                .get(spreadsheetId, timeRange)
+                .get(SPREADSHEETID, timeRange)
                 .execute();
         values = response.getValues();
         if (values == null || values.isEmpty()) {
@@ -238,7 +160,6 @@ public class Parser {
             for (int i = 0; i < values.size(); i++) {
                 LocalTime endTime = LocalTime.parse(values.get(i).get(0).toString().split("-")[0]);
                 LocalTime startTime = endTime.minus(Duration.ofMinutes(5));
-                //LocalTime endTime = LocalTime.parse(values.get(i).get(0).toString().split("-")[1]);
                 if (startTime.isBefore(localTime) && endTime.isAfter(localTime)) {
                     rowIndex = rowIndex + i;
                 }
@@ -249,7 +170,7 @@ public class Parser {
 
         final String courseRange = "E" + rowIndex + ":AO" + rowIndex;
         response = service.spreadsheets().values()
-                .get(spreadsheetId, courseRange)
+                .get(SPREADSHEETID, courseRange)
                 .execute();
         values = response.getValues();
         if (values == null || values.isEmpty()) {
@@ -262,5 +183,28 @@ public class Parser {
             }
         }
         return currentCourses;
+    }
+
+
+    private static Sheets GetSheets(String range) throws IOException, GeneralSecurityException
+    {
+        final NetHttpTransport HTTP_TRANSPORT = GoogleNetHttpTransport.newTrustedTransport();
+        Sheets service = new Sheets.Builder(HTTP_TRANSPORT, JSON_FACTORY, getCredentials(HTTP_TRANSPORT))
+                .setApplicationName(APPLICATION_NAME)
+                .build();
+        return service;
+    }
+    private static  List<List<Object>> GetMainListData() throws IOException, GeneralSecurityException
+    {
+        final String range = "E2:AO721";
+        Sheets service = GetSheets(range);
+        ValueRange response = service.spreadsheets().values()
+                .get(SPREADSHEETID, range)
+                .execute();
+        List<List<Object>> values = response.getValues();
+        if (values == null || values.isEmpty()) {
+            System.err.println("No data found.");
+        }
+        return values;
     }
 }
