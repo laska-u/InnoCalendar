@@ -9,3 +9,12 @@ Addressing the above stated problem, we assume that it will be comfortable to ha
 
 ## Prior research
 For implementation we propose to use Telegram Bot. The user will be able to find and subscribe to desired elective courses, while the bot will send notifications about changes in the official Google Spreadsheet and provide information of upcoming classes.   
+
+##How to run
+0)  open solution with intllij idea
+1)	add account credits and postgre DB address to hibernate.cfg.xml
+2)  for first run uncoment string <property name="hbm2ddl.auto">create</property> in hibernate.cfg.xml
+3)  set id of user you whant to be admin to ADMIN_ID in Bot.java 
+4) 	run solution
+5) 	during first run you will be asked to login to your google account 
+ 
