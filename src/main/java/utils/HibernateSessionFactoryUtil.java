@@ -2,6 +2,7 @@ package utils;
 
 import model.Course;
 import model.User;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
 import org.hibernate.cfg.Configuration;
@@ -11,7 +12,7 @@ public class HibernateSessionFactoryUtil {
 
     private HibernateSessionFactoryUtil() {}
 
-    public static SessionFactory getSessionFactory() {
+    private static SessionFactory getSessionFactory() {
         if (sessionFactory == null) {
             try {
                 Configuration configuration = new Configuration().configure();
@@ -19,11 +20,17 @@ public class HibernateSessionFactoryUtil {
                 configuration.addAnnotatedClass(Course.class);
                 StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder().applySettings(configuration.getProperties());
                 sessionFactory = configuration.buildSessionFactory(builder.build());
-
+                sessionFactory.openSession();
             } catch (Exception e) {
-                System.out.println("hibernate exception!" + e);
+                System.err.println("hibernate exception!" + e);
             }
         }
         return sessionFactory;
+    }
+
+    public static Session GetCurrentSession()
+    {
+        SessionFactory sessionFactory = getSessionFactory();
+        return sessionFactory.getCurrentSession();
     }
 }

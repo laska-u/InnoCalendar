@@ -8,45 +8,38 @@ import utils.HibernateSessionFactoryUtil;
 
 import java.util.List;
 
-public class CourseDao {
+public class CourseDao extends  AbstractDao{
 
     public Course findById(long id) {
-        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Course.class, id);
+        Session session = HibernateSessionFactoryUtil.GetCurrentSession();
+        Transaction tx = session.beginTransaction();
+        Course course = session.get(Course.class, id);
+        tx.commit();
+        return course;
     }
 
     public void save(Course course) {
-        Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
-        Transaction tx1 = session.beginTransaction();
-        session.save(course);
-        tx1.commit();
-        session.close();
+        super.save(course);
     }
 
     public void update(Course course) {
-        Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
-        Transaction tx1 = session.beginTransaction();
-        session.update(course);
-        tx1.commit();
-        session.close();
+        super.update(course);
     }
 
     public void delete(Course course) {
-        Session session = HibernateSessionFactoryUtil.getSessionFactory().openSession();
-        Transaction tx1 = session.beginTransaction();
-        session.delete(course);
-        tx1.commit();
-        session.close();
+        super.delete(course);
     }
 
-
-
     public List<Course> findAll() {
-        List<Course> courses = (List<Course>)  HibernateSessionFactoryUtil.getSessionFactory().openSession().createQuery("from model.Course").list();
+        Session session = HibernateSessionFactoryUtil.GetCurrentSession();
+        Transaction tx = session.beginTransaction();
+        List<Course> courses = (List<Course>)  session.createQuery("from model.Course").list();
+        tx.commit();
         return courses;
     }
 
     public Course findCourseById(int id) {
-        return HibernateSessionFactoryUtil.getSessionFactory().openSession().get(Course.class, id);
+        return HibernateSessionFactoryUtil.GetCurrentSession().get(Course.class, id);
     }
 
 }
