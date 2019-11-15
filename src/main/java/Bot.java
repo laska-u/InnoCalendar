@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageRe
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -25,6 +26,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ *
+ */
 public class Bot extends TelegramLongPollingBot {
 
     public static final String SPREAD_SHEET = "https://docs.google.com/spreadsheets/d/15xpB2ckMNQLmgwTmJv0DsRjrvsjAYPAC0Im3QFWdqZM/edit#gid=516269660";
@@ -43,6 +47,11 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     //https://api.telegram.org/bot930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo/getUpdates
+    /**
+    Covered use cases:
+    [Use case #4.1] The bot sends notifications when Admin makes changes in the elective course schedule on the Google Sheet
+    [Use case #4.2] The bot sends notifications one hour before commencement of elective course
+     */
     public static void main(String[] args) {
 
 
@@ -101,7 +110,13 @@ public class Bot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-
+    /**
+        Following Use cases are covered :
+        [Use case #1] User starts the bot;
+        [Use case #2] View entire elective course schedule
+        [Use case #3] User  wants to choose an elective courses in order to get notifications
+        [Use case #5] User  wants to unsubscribe from the bot
+    */
     BotApiMethod<? extends Serializable> getMethod(Update update) {
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -131,6 +146,15 @@ public class Bot extends TelegramLongPollingBot {
                 case "Choose course":
                     return sendCourses(chat_id);
                 case "Finish choosing process":
+                    sendMenu(chat_id);
+                    break;
+                case "Unsubscribe":
+                    YNDialogue(chat_id);
+                    break;
+                case "Yes":
+                    unsubscribeUserFromBot(chat_id);
+                    break;
+                case "No":
                     sendMenu(chat_id);
                     break;
                 case "Upload Courses":
@@ -237,10 +261,25 @@ public class Bot extends TelegramLongPollingBot {
         KeyboardRow keyboardFirstRow = new KeyboardRow();
         keyboardFirstRow.add(new KeyboardButton("Choose course"));
         keyboardFirstRow.add(new KeyboardButton("All courses"));
+        keyboardFirstRow.add(new KeyboardButton("Unsubscribe"));
         if(isAdmin)
         {
             keyboardFirstRow.add(new KeyboardButton("Upload Courses"));
         }
+        keyboard.add(keyboardFirstRow);
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setYesNoButtons(SendMessage sendMessage) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        keyboardFirstRow.add(new KeyboardButton("Yes"));
+        keyboardFirstRow.add(new KeyboardButton("No"));
         keyboard.add(keyboardFirstRow);
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
@@ -280,5 +319,38 @@ public class Bot extends TelegramLongPollingBot {
         InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
         markupKeyboard.setKeyboard(buttons);
         return markupKeyboard;
+    }
+
+    /*
+    Use case #5: Unsubscribe from bot
+     */
+    private void unsubscribeUserFromBot(long chatId)
+    {
+        User user = userService.findUser(chatId);
+        if(user != null)
+        userService.deleteUser(user);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableMarkdown(false);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("You successfully unsubscribed");
+        ReplyKeyboardRemove markup = new ReplyKeyboardRemove();
+        sendMessage.setReplyMarkup(markup);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+        }
+    }
+
+    private void YNDialogue(long chatId)
+    {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableMarkdown(true);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Do you want to unsubscribe from bot?");
+        setYesNoButtons(sendMessage);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+        }
     }
 }
