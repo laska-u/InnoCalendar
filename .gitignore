@@ -1,1 +1,5 @@
 **/.DS_Store
+.idea/*
+.idea/libraries/Maven__org_mortbay_jetty_servlet_api_2_5_20081211.xml
+.idea/libraries/Maven__postgresql_postgresql_9_1_901_1_jdbc4.xml
+.idea/vcs.xml

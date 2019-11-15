@@ -4,11 +4,13 @@ import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
@@ -18,22 +20,41 @@ import service.CourseService;
 import service.UserService;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ *
+ */
 public class Bot extends TelegramLongPollingBot {
 
     public static final String SPREAD_SHEET = "https://docs.google.com/spreadsheets/d/15xpB2ckMNQLmgwTmJv0DsRjrvsjAYPAC0Im3QFWdqZM/edit#gid=516269660";
     private Parser parser = new Parser();
     private static UserService userService = new UserService();
     private CourseService courseService = new CourseService();
-    private static final long ADMIN_ID = 273255483;
+    private static final long ADMIN_ID = 364224503;
     private static final int REMINDER_INTERVAL = 300000;
 
+    void setParser(Parser parser) {
+        this.parser = parser;
+    }
+
+    static void setUserService(UserService userService) {
+        Bot.userService = userService;
+    }
+
     //https://api.telegram.org/bot930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo/getUpdates
+    /**
+    Covered use cases:
+    [Use case #4.1] The bot sends notifications when Admin makes changes in the elective course schedule on the Google Sheet
+    [Use case #4.2] The bot sends notifications one hour before commencement of elective course
+     */
     public static void main(String[] args) {
+
+
         int reminders_count = 0;
         ApiContextInitializer.init();
         try {
@@ -89,8 +110,14 @@ public class Bot extends TelegramLongPollingBot {
             e.printStackTrace();
         }
     }
-
-    public void onUpdateReceived(Update update) {
+    /**
+        Following Use cases are covered :
+        [Use case #1] User starts the bot;
+        [Use case #2] View entire elective course schedule
+        [Use case #3] User  wants to choose an elective courses in order to get notifications
+        [Use case #5] User  wants to unsubscribe from the bot
+    */
+    BotApiMethod<? extends Serializable> getMethod(Update update) {
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
 
@@ -106,27 +133,37 @@ public class Bot extends TelegramLongPollingBot {
 
             switch (message_text) {
                 case "/start":
-                    sendMsg(chat_id);
                     User user = userService.findUser(user_id);
                     if (user == null) {
                         userService.saveUser(new User(user_id, chat_id));
                         System.out.println("new user registered");
-                    } else {
-                        System.out.println("user registered already");
                     }
-                    break;
+                    System.out.println("user registered already");
+                    return sendMenu(chat_id);
                 case "All courses":
                     sendMsg(chat_id, SPREAD_SHEET);
                     break;
                 case "Choose course":
-                    sendCourses(chat_id);
-                    break;
+                    return sendCourses(chat_id);
                 case "Finish choosing process":
-                    sendMsg(chat_id);
+                    sendMenu(chat_id);
+                    break;
+                case "Unsubscribe":
+                    YNDialogue(chat_id);
+                    break;
+                case "Yes":
+                    unsubscribeUserFromBot(chat_id);
+                    break;
+                case "No":
+                    sendMenu(chat_id);
                     break;
                 case "Upload Courses":
                     if (user_id == ADMIN_ID) {
                         saveCoursesInDataBase();
+                        sendMsg(chat_id, "courses succesfully updated");
+                    }
+                    else {
+                        sendMsg(chat_id, "Sorry, I don't understand you :(");
                     }
                     break;
                 default:
@@ -135,7 +172,6 @@ public class Bot extends TelegramLongPollingBot {
 
 
         } else if (update.hasCallbackQuery()) {
-            boolean found = false;
             long course_id = Long.parseLong(update.getCallbackQuery().getData());
             User user = userService.findUser(update.getCallbackQuery().getFrom().getId());
             Course course = userService.getCourseById(user, course_id);
@@ -149,34 +185,23 @@ public class Bot extends TelegramLongPollingBot {
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
 
-            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-            List<String> courses = parser.getCourses();
+            InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
 
-            for (int i = 0; i < courses.size(); i++) {
-                String courseStr = courses.get(i);
-                List<InlineKeyboardButton> button = new ArrayList<>();
-                if ((userService.getCourseById(user, i)!=null)) {
-                    button.add(new InlineKeyboardButton().setText("\u2705 " + courseStr).setCallbackData(String.valueOf(i)));
-                } else {
-                    button.add(new InlineKeyboardButton().setText(courseStr).setCallbackData(String.valueOf(i)));
-                }
-                buttons.add(button);
-            }
-
-            InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-            markupKeyboard.setKeyboard(buttons);
-                EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
-                        .setChatId(chat_id)
-                        .setMessageId(Math.toIntExact(message_id))
-                        .setReplyMarkup(markupKeyboard);
-                try {
-                    execute(murkup_message);
-                } catch (TelegramApiException e) {
-                    e.printStackTrace();
-                }
-//            }
+            EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
+                    .setChatId(chat_id)
+                    .setMessageId(Math.toIntExact(message_id))
+                    .setReplyMarkup(markupKeyboard);
+            return murkup_message;
         }
+        return null;
+    }
 
+    public void onUpdateReceived(Update update) {
+        try {
+            execute(getMethod(update));
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+        }
     }
 
     private void saveCoursesInDataBase() {
@@ -194,7 +219,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public String getBotToken() {
-        return "930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo";
+        return "956186353:AAH0uqWY1f9Qt9Csk-x8nFo0iJdIDOb4CJ0";
     }
 
     public synchronized void sendMsg(long chatId, String s) {
@@ -208,31 +233,25 @@ public class Bot extends TelegramLongPollingBot {
         }
     }
 
-    public synchronized void sendMsg(long chatId) {
+    public synchronized SendMessage sendMenu(long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
         sendMessage.setText("Hello! \u270b\nYou can view schedule or choose elective courses");
-        setButtons(sendMessage);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-        }
+        setButtons(sendMessage, chatId == ADMIN_ID);
+        return sendMessage;
     }
 
-    public synchronized void sendCourses(long chatId) {
+    public synchronized SendMessage sendCourses(long chatId) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
         sendMessage.setText("Click to any course below to subscribe for it:");
         setInline(sendMessage);
-        try {
-            execute(sendMessage);
-        } catch (TelegramApiException e) {
-        }
+        return sendMessage;
     }
 
-    public synchronized void setButtons(SendMessage sendMessage) {
+    public synchronized void setButtons(SendMessage sendMessage, boolean isAdmin) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         replyKeyboardMarkup.setSelective(true);
@@ -242,28 +261,32 @@ public class Bot extends TelegramLongPollingBot {
         KeyboardRow keyboardFirstRow = new KeyboardRow();
         keyboardFirstRow.add(new KeyboardButton("Choose course"));
         keyboardFirstRow.add(new KeyboardButton("All courses"));
+        keyboardFirstRow.add(new KeyboardButton("Unsubscribe"));
+        if(isAdmin)
+        {
+            keyboardFirstRow.add(new KeyboardButton("Upload Courses"));
+        }
+        keyboard.add(keyboardFirstRow);
+        replyKeyboardMarkup.setKeyboard(keyboard);
+    }
+
+    public synchronized void setYesNoButtons(SendMessage sendMessage) {
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);
+        replyKeyboardMarkup.setOneTimeKeyboard(false);
+        List<KeyboardRow> keyboard = new ArrayList<>();
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        keyboardFirstRow.add(new KeyboardButton("Yes"));
+        keyboardFirstRow.add(new KeyboardButton("No"));
         keyboard.add(keyboardFirstRow);
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
 
     private void setInline(SendMessage sendMessage) {
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<String> courses = parser.getCourses();
-
         User user = userService.findUser(Long.parseLong(sendMessage.getChatId()));
-
-        for (int i = 0; i < courses.size(); i++) {
-            String course = courses.get(i);
-            List<InlineKeyboardButton> button = new ArrayList<>();
-            if ((userService.getCourseById(user, i)!=null)) {
-                button.add(new InlineKeyboardButton().setText("\u2705 " + course).setCallbackData(String.valueOf(i)));
-            } else {
-                button.add(new InlineKeyboardButton().setText(course).setCallbackData(String.valueOf(i)));
-            }
-            buttons.add(button);
-        }
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-        markupKeyboard.setKeyboard(buttons);
+        InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
         sendMessage.setReplyMarkup(markupKeyboard);
     }
 
@@ -276,6 +299,58 @@ public class Bot extends TelegramLongPollingBot {
             execute(answer);
         } catch (TelegramApiException e) {
             e.printStackTrace();
+        }
+    }
+
+    private InlineKeyboardMarkup SetCoursesButtonsForUser(User user)
+    {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<String> courses = parser.getCourses();
+        for (int i = 0; i < courses.size(); i++) {
+            String course = courses.get(i);
+            List<InlineKeyboardButton> button = new ArrayList<>();
+            if ((userService.getCourseById(user, i)!=null)) {
+                button.add(new InlineKeyboardButton().setText("\u2705 " + course).setCallbackData(String.valueOf(i)));
+            } else {
+                button.add(new InlineKeyboardButton().setText(course).setCallbackData(String.valueOf(i)));
+            }
+            buttons.add(button);
+        }
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+        return markupKeyboard;
+    }
+
+    /*
+    Use case #5: Unsubscribe from bot
+     */
+    private void unsubscribeUserFromBot(long chatId)
+    {
+        User user = userService.findUser(chatId);
+        if(user != null)
+        userService.deleteUser(user);
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableMarkdown(false);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("You successfully unsubscribed");
+        ReplyKeyboardRemove markup = new ReplyKeyboardRemove();
+        sendMessage.setReplyMarkup(markup);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
+        }
+    }
+
+    private void YNDialogue(long chatId)
+    {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.enableMarkdown(true);
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("Do you want to unsubscribe from bot?");
+        setYesNoButtons(sendMessage);
+        try {
+            execute(sendMessage);
+        } catch (TelegramApiException e) {
         }
     }
 }
