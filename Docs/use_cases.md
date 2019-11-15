@@ -1,6 +1,6 @@
 **Use case scenarios**
 
-| Use case #1 | User starts the bot |
+| Use case #1 | #User starts the bot |
 | --- | --- |
 | Actors | Student, Bot |
 | Pre-conditions | The student must have a telegram account </br> The elective course schedule should be available on Google sheets |
@@ -8,8 +8,9 @@
 | Post-conditions | User is registered in InnoCalendat bot |
 | Alternate flows and exceptions | The user doesn&#39;t send the right command |
 | Assumption | The user has a Telegram account 
+| Implementation | Bot.java |
 
-| Use case #2 | View entire elective course schedule |
+| Use case #2 | #View entire elective course schedule |
 | --- | --- |
 | Actors | Student,Telegram bot |
 | Pre-condition | Students sends the right command to initiate communication with bot |
@@ -17,8 +18,9 @@
 | Post-conditions | User gets link for google sheet of entire elective course |
 | Alternate flows and exceptions | 1. The user doesn&#39;t send the right command to the telegram bot </br> 2. The user doesn&#39;t have internet connection on his phone and link fails to load  |
 | Assumption | The user has internet connection on his phone as to load the page containing google sheet |
+| Implementation | Bot.java |
 
-| Use case #3 | User  wants to choose an elective courses in order to get notifications |
+| Use case #3 | #User  wants to choose an elective courses in order to get notifications |
 | --- | --- |
 | Actors | Student, Telegram bot |
 | Pre-condition | User sends the right command to initiate communication with bot <br> Course to be registered by student exists |
@@ -27,7 +29,8 @@
 | Alternate flows and exceptions | Telegram bot fails to save user's choice details into database because the phone was out of network coverage  |
 | Assumption | The course intended to be registered for is found |
 
-| Use case #4.1 | The bot sends notifications when Admin makes changes in the elective course schedule on the Google Sheet |
+
+| Use case #4.1 | #The bot sends notifications when Admin makes changes in the elective course schedule on the Google Sheet |
 | --- | --- |
 | Actors | Telegram bot, Admin, Student |
 | Pre-condition | Google Sheets to be modified exist </br> Telegram bot must have stored elective course schedule in the database </br> Students must be registered for the course to be notified |
@@ -37,7 +40,7 @@
 | Assumption | That Google sheet to be modified by the admin exists and this current information are stored in the database to be accessed by the bot </br> The student&#39;s internet connection is on or is within a range of network connectivity to receive the notification
 
 
-| Use case #4.2 | The bot sends notifications one hour before commencement of elective course |
+| Use case #4.2 | #The bot sends notifications one hour before commencement of elective course |
 | --- | --- |
 | Actors | Telegram bot, Student |
 | Pre-condition | Students must be registered for the course to be notified |
@@ -46,13 +49,13 @@
 | Alternate flows and exceptions | 1. The user doesnt receive the notification because his internet connection is turned off and misses the class </br> 2. Telegram&#39;s server is down and bots are inactive  |
 | Assumption | The user will receive the notification early enough to prepare for class |
 
-| Use case #5 | User  wants to unsubscribe from the bot |
+| Use case #5 | #User  wants to unsubscribe from the bot |
 | --- | --- |
 | Actors | Student,Telegram bot |
 | Pre-condition | Student subscribed to the bot to get notification about the elective course schedule |
-| Flow of Events | 1.Student initiates deletion </br> 2. Student confirms the unsubscription </br> 3.Bot will unsubscribe the user </br> 4.Bot deletes student’s data from the database </br> |
+| Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L151-L153"> Student initiates deletion </br><a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L154-L156"> 2. Student confirms the unsubscription </br> 3.Bot will unsubscribe the user </br> 4.Bot deletes student’s data from the database </br> |
 | Post-conditions | Chat with Bot will be deleted from Student’s telegram account |
-| Alternate flows and exceptions | Student doesn’t confirm the unsubscription |
+| Alternate flows and exceptions | <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L157-L159"> Student doesn’t confirm the unsubscription |
 | Assumption | The student has a Telegram account |
 
 
