@@ -31,7 +31,7 @@ public class Bot extends TelegramLongPollingBot {
     private Parser parser = new Parser();
     private static UserService userService = new UserService();
     private CourseService courseService = new CourseService();
-    private static final long ADMIN_ID = 273255483;
+    private static final long ADMIN_ID = 364224503;
     private static final int REMINDER_INTERVAL = 300000;
 
     void setParser(Parser parser) {
@@ -44,6 +44,8 @@ public class Bot extends TelegramLongPollingBot {
 
     //https://api.telegram.org/bot930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo/getUpdates
     public static void main(String[] args) {
+
+
         int reminders_count = 0;
         ApiContextInitializer.init();
         try {
@@ -134,6 +136,10 @@ public class Bot extends TelegramLongPollingBot {
                 case "Upload Courses":
                     if (user_id == ADMIN_ID) {
                         saveCoursesInDataBase();
+                        sendMsg(chat_id, "courses succesfully updated");
+                    }
+                    else {
+                        sendMsg(chat_id, "Sorry, I don't understand you :(");
                     }
                     break;
                 default:
@@ -142,7 +148,6 @@ public class Bot extends TelegramLongPollingBot {
 
 
         } else if (update.hasCallbackQuery()) {
-            boolean found = false;
             long course_id = Long.parseLong(update.getCallbackQuery().getData());
             User user = userService.findUser(update.getCallbackQuery().getFrom().getId());
             Course course = userService.getCourseById(user, course_id);
@@ -156,22 +161,8 @@ public class Bot extends TelegramLongPollingBot {
             long message_id = update.getCallbackQuery().getMessage().getMessageId();
             long chat_id = update.getCallbackQuery().getMessage().getChatId();
 
-            List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-            List<String> courses = parser.getCourses();
+            InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
 
-            for (int i = 0; i < courses.size(); i++) {
-                String courseStr = courses.get(i);
-                List<InlineKeyboardButton> button = new ArrayList<>();
-                if ((userService.getCourseById(user, i)!=null)) {
-                    button.add(new InlineKeyboardButton().setText("\u2705 " + courseStr).setCallbackData(String.valueOf(i)));
-                } else {
-                    button.add(new InlineKeyboardButton().setText(courseStr).setCallbackData(String.valueOf(i)));
-                }
-                buttons.add(button);
-            }
-
-            InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-            markupKeyboard.setKeyboard(buttons);
             EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
                     .setChatId(chat_id)
                     .setMessageId(Math.toIntExact(message_id))
@@ -204,7 +195,7 @@ public class Bot extends TelegramLongPollingBot {
     }
 
     public String getBotToken() {
-        return "930074549:AAEzjxP7aFUkpBs4dgn8QbUgpb5JeDRd3vo";
+        return "956186353:AAH0uqWY1f9Qt9Csk-x8nFo0iJdIDOb4CJ0";
     }
 
     public synchronized void sendMsg(long chatId, String s) {
@@ -223,7 +214,7 @@ public class Bot extends TelegramLongPollingBot {
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
         sendMessage.setText("Hello! \u270b\nYou can view schedule or choose elective courses");
-        setButtons(sendMessage);
+        setButtons(sendMessage, chatId == ADMIN_ID);
         return sendMessage;
     }
 
@@ -236,7 +227,7 @@ public class Bot extends TelegramLongPollingBot {
         return sendMessage;
     }
 
-    public synchronized void setButtons(SendMessage sendMessage) {
+    public synchronized void setButtons(SendMessage sendMessage, boolean isAdmin) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
         replyKeyboardMarkup.setSelective(true);
@@ -246,28 +237,17 @@ public class Bot extends TelegramLongPollingBot {
         KeyboardRow keyboardFirstRow = new KeyboardRow();
         keyboardFirstRow.add(new KeyboardButton("Choose course"));
         keyboardFirstRow.add(new KeyboardButton("All courses"));
+        if(isAdmin)
+        {
+            keyboardFirstRow.add(new KeyboardButton("Upload Courses"));
+        }
         keyboard.add(keyboardFirstRow);
         replyKeyboardMarkup.setKeyboard(keyboard);
     }
 
     private void setInline(SendMessage sendMessage) {
-        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
-        List<String> courses = parser.getCourses();
-
         User user = userService.findUser(Long.parseLong(sendMessage.getChatId()));
-
-        for (int i = 0; i < courses.size(); i++) {
-            String course = courses.get(i);
-            List<InlineKeyboardButton> button = new ArrayList<>();
-            if ((userService.getCourseById(user, i)!=null)) {
-                button.add(new InlineKeyboardButton().setText("\u2705 " + course).setCallbackData(String.valueOf(i)));
-            } else {
-                button.add(new InlineKeyboardButton().setText(course).setCallbackData(String.valueOf(i)));
-            }
-            buttons.add(button);
-        }
-        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
-        markupKeyboard.setKeyboard(buttons);
+        InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
         sendMessage.setReplyMarkup(markupKeyboard);
     }
 
@@ -281,5 +261,24 @@ public class Bot extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
+    }
+
+    private InlineKeyboardMarkup SetCoursesButtonsForUser(User user)
+    {
+        List<List<InlineKeyboardButton>> buttons = new ArrayList<>();
+        List<String> courses = parser.getCourses();
+        for (int i = 0; i < courses.size(); i++) {
+            String course = courses.get(i);
+            List<InlineKeyboardButton> button = new ArrayList<>();
+            if ((userService.getCourseById(user, i)!=null)) {
+                button.add(new InlineKeyboardButton().setText("\u2705 " + course).setCallbackData(String.valueOf(i)));
+            } else {
+                button.add(new InlineKeyboardButton().setText(course).setCallbackData(String.valueOf(i)));
+            }
+            buttons.add(button);
+        }
+        InlineKeyboardMarkup markupKeyboard = new InlineKeyboardMarkup();
+        markupKeyboard.setKeyboard(buttons);
+        return markupKeyboard;
     }
 }
