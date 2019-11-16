@@ -13,7 +13,7 @@ Addressing the above stated problem, we assume that it will be comfortable to ha
 For implementation we propose to use Telegram Bot. The user will be able to find and subscribe to desired elective courses, while the bot will send notifications about changes in the official Google Spreadsheet and provide information of upcoming classes.   
 
 
-##How to run
+## How to run
 
 ### Database
 This application uses Postgres. You should have the database credentials
@@ -33,12 +33,11 @@ connection url. Additionally you can specify other connection details in the
 connection url.
 
 ### Building
-This application can be compiled using (Maven)[https://github.com/apache/maven].
+This application can be compiled using [https://github.com/apache/maven](Maven).
 
 To compile this application, run
 ```
 mvn clean compile assembly:single
-
 ```
 
 After this, the JAR file will be available at
@@ -60,7 +59,6 @@ The application will print
 ```
 Please open the following address in your browser:
   https://accounts.google.com/o/oauth2/auth...
-
 ```
 
 To complete the OAuth2, open the provided link in a web browser and grant
