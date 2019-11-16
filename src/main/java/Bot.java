@@ -155,8 +155,7 @@ public class Bot extends TelegramLongPollingBot {
                     unsubscribeUserFromBot(chat_id);
                     break;
                 case "No":
-                    sendMenu(chat_id);
-                    break;
+                    return sendMenu(chat_id);
                 case "Upload Courses":
                     if (user_id == ADMIN_ID) {
                         saveCoursesInDataBase();
