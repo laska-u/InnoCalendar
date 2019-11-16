@@ -147,6 +147,10 @@ public class Bot extends TelegramLongPollingBot {
                     sendMsg(chat_id, SPREAD_SHEET);
                     break;
                 case "Choose course":
+                    if (userService.findUser(user_id)== null) {
+                        userService.saveUser(new User(user_id, chat_id));
+                        System.out.println("new user registered");
+                    }
                     return sendCourses(chat_id);
                 case "Finish choosing process":
                     sendMenu(chat_id);
