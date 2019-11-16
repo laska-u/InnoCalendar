@@ -19,6 +19,9 @@ For implementation we propose to use Telegram Bot. The user will be able to find
 This application uses Postgres. You should have the database credentials
 and a database for the user.
 
+For convinience, a docker compose file is provided to run a configured
+postgres database in the host network.
+
 Set them in `src/main/resources/hibernate.cfg.xml`. Put the username
 in the `<property name="hibernate.connection.username>` (default is `postgres`)
 tag,
