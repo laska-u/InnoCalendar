@@ -68,6 +68,9 @@ public class Bot extends TelegramLongPollingBot {
         try {
             Bot myBot = new Bot();
             telegramBotsApi.registerBot(new Bot());
+
+            myBot.saveCoursesInDataBase();
+
             while (true) {
                 try {
                     Thread.sleep(REMINDER_INTERVAL);
