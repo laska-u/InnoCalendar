@@ -8,7 +8,7 @@
         <property name="hibernate.connection.driver_class">org.postgresql.Driver</property>
         <property name="hibernate.connection.username">postgres</property>
         <property name="hibernate.connection.password">postgres</property>
-        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5433/electives7</property>
+        <property name="hibernate.connection.url">jdbc:postgresql://localhost:5432/electives7</property>
         <property name="hibernate.current_session_context_class">thread</property>
 <!--        <property name="connection_pool_size">1</property>-->
         <!--<property name="hbm2ddl.auto">create</property>-->

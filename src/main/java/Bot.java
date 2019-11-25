@@ -68,6 +68,9 @@ public class Bot extends TelegramLongPollingBot {
         try {
             Bot myBot = new Bot();
             telegramBotsApi.registerBot(new Bot());
+
+            myBot.saveCoursesInDataBase();
+
             while (true) {
                 try {
                     Thread.sleep(REMINDER_INTERVAL);
@@ -130,8 +133,9 @@ public class Bot extends TelegramLongPollingBot {
             String message_text = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
             long user_id = update.getMessage().getFrom().getId();
+
             User user = userService.findUser(user_id);
-            if (user != null || message_text=="/start") {
+            if (user != null || message_text.equals("/start")) {
                 switch (message_text) {
                     case "/start":
                         if (user == null) {
@@ -161,7 +165,7 @@ public class Bot extends TelegramLongPollingBot {
                         }
                         break;
                     default:
-                        return sendMsg(chat_id, "Sorry, I don't understand you :(");
+                        sendMsg(chat_id, "Sorry, I don't understand you :(");
                 }
             }
             else
