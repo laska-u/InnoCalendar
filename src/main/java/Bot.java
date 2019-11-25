@@ -130,70 +130,71 @@ public class Bot extends TelegramLongPollingBot {
             String message_text = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
             long user_id = update.getMessage().getFrom().getId();
-
-            switch (message_text) {
-                case "/start":
-                    User user = userService.findUser(user_id);
-                    if (user == null) {
-                        userService.saveUser(new User(user_id, chat_id));
-                        System.out.println("new user registered");
-                    }
-                    System.out.println("user registered already");
-                    return sendMenu(chat_id);
-                case "All courses":
-                    sendMsg(chat_id, SPREAD_SHEET);
-                    break;
-                case "Choose course":
-                    return sendCourses(chat_id);
-                case "Finish choosing process":
-                    sendMenu(chat_id);
-                    break;
-                case "Unsubscribe":
-                    YNDialogue(chat_id);
-                    break;
-                case "Yes":
-                    unsubscribeUserFromBot(chat_id);
-                    break;
-                case "No":
-                    return sendMenu(chat_id);
-                case "Upload Courses":
-                    if (user_id == ADMIN_ID) {
-                        saveCoursesInDataBase();
-                        sendMsg(chat_id, "courses succesfully updated");
-                    }
-                    else {
-                        sendMsg(chat_id, "Sorry, I don't understand you :(");
-                    }
-                    break;
-                default:
-                    sendMsg(chat_id, "Sorry, I don't understand you :(");
+            User user = userService.findUser(user_id);
+            if (user != null || message_text=="/start") {
+                switch (message_text) {
+                    case "/start":
+                        if (user == null) {
+                            userService.saveUser(new User(user_id, chat_id));
+                            System.out.println("new user registered");
+                        }
+                        return sendMenu(chat_id);
+                    case "All courses":
+                        return sendMsg(chat_id, SPREAD_SHEET);
+                    case "Choose course":
+                        return sendCourses(chat_id);
+                    case "Finish choosing process":
+                        sendMenu(chat_id);
+                        break;
+                    case "Unsubscribe":
+                        return YNDialogue(chat_id);
+                    case "Yes":
+                        return unsubscribeUserFromBot(chat_id);
+                    case "No":
+                        return sendMenu(chat_id);
+                    case "Upload Courses":
+                        if (user_id == ADMIN_ID) {
+                            saveCoursesInDataBase();
+                            sendMsg(chat_id, "courses succesfully updated");
+                        } else {
+                            sendMsg(chat_id, "Sorry, I don't understand you :(");
+                        }
+                        break;
+                    default:
+                        return sendMsg(chat_id, "Sorry, I don't understand you :(");
+                }
+            }
+            else
+            {
+                return sendMsg(chat_id, "You are unsubscribed for this bot /start to start");
             }
 
+            } else if (update.hasCallbackQuery()) {
+                long course_id = Long.parseLong(update.getCallbackQuery().getData());
+                User user = userService.findUser(update.getCallbackQuery().getFrom().getId());
+                Course course = userService.getCourseById(user, course_id);
 
-        } else if (update.hasCallbackQuery()) {
-            long course_id = Long.parseLong(update.getCallbackQuery().getData());
-            User user = userService.findUser(update.getCallbackQuery().getFrom().getId());
-            Course course = userService.getCourseById(user, course_id);
+                if (course == null) {
+                    userService.subscribeUser(user, new Course(courseService.findCourse(course_id).getName(), course_id));
+                } else {
+                    userService.unSubscribeUser(user, course);
+                }
 
-            if (course == null) {
-                userService.subscribeUser(user, new Course(courseService.findCourse(course_id).getName(), course_id));
-            } else {
-                userService.unSubscribeUser(user, course);
+                long message_id = update.getCallbackQuery().getMessage().getMessageId();
+                long chat_id = update.getCallbackQuery().getMessage().getChatId();
+
+                InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
+
+                EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
+                        .setChatId(chat_id)
+                        .setMessageId(Math.toIntExact(message_id))
+                        .setReplyMarkup(markupKeyboard);
+                return murkup_message;
             }
 
-            long message_id = update.getCallbackQuery().getMessage().getMessageId();
-            long chat_id = update.getCallbackQuery().getMessage().getChatId();
-
-            InlineKeyboardMarkup markupKeyboard = SetCoursesButtonsForUser(user);
-
-            EditMessageReplyMarkup murkup_message = new EditMessageReplyMarkup()
-                    .setChatId(chat_id)
-                    .setMessageId(Math.toIntExact(message_id))
-                    .setReplyMarkup(markupKeyboard);
-            return murkup_message;
-        }
         return null;
     }
+
 
     public void onUpdateReceived(Update update) {
         try {
@@ -221,7 +222,7 @@ public class Bot extends TelegramLongPollingBot {
         return "956186353:AAH0uqWY1f9Qt9Csk-x8nFo0iJdIDOb4CJ0";
     }
 
-    public synchronized void sendMsg(long chatId, String s) {
+    public synchronized SendMessage sendMsg(long chatId, String s) {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
         sendMessage.setChatId(chatId);
@@ -230,6 +231,7 @@ public class Bot extends TelegramLongPollingBot {
             execute(sendMessage);
         } catch (TelegramApiException e) {
         }
+        return  sendMessage;
     }
 
     public synchronized SendMessage sendMenu(long chatId) {
@@ -323,7 +325,7 @@ public class Bot extends TelegramLongPollingBot {
     /*
     Use case #5: Unsubscribe from bot
      */
-    private void unsubscribeUserFromBot(long chatId)
+    private SendMessage unsubscribeUserFromBot(long chatId)
     {
         User user = userService.findUser(chatId);
         if(user != null)
@@ -338,9 +340,10 @@ public class Bot extends TelegramLongPollingBot {
             execute(sendMessage);
         } catch (TelegramApiException e) {
         }
+        return  sendMessage;
     }
 
-    private void YNDialogue(long chatId)
+    private SendMessage YNDialogue(long chatId)
     {
         SendMessage sendMessage = new SendMessage();
         sendMessage.enableMarkdown(true);
@@ -351,5 +354,6 @@ public class Bot extends TelegramLongPollingBot {
             execute(sendMessage);
         } catch (TelegramApiException e) {
         }
+        return  sendMessage;
     }
 }
