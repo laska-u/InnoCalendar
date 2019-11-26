@@ -92,9 +92,7 @@ public class Bot extends TelegramLongPollingBot {
                     reminders_count = 0;
                     List<Integer> changesIds = Parser.getChangesCoursesIds();
                     for (User user : userService.findAllUsers()) {
-                        System.out.println("user id" + user.getId());
                         for (int courseId : changesIds) {
-                            System.out.println("Course ID:" + courseId);
                             Course course = userService.getCourseById(user, courseId);
                             if (course!=null) {
                                 myBot.sendMsg(user.getChat_id(), "\u2757 Changes in your course: " + course.getName());
@@ -123,13 +121,6 @@ public class Bot extends TelegramLongPollingBot {
     BotApiMethod<? extends Serializable> getMethod(Update update) {
         // We check if the update has a message and the message has text
         if (update.hasMessage() && update.getMessage().hasText()) {
-
-            System.out.println("First name:" + update.getMessage().getFrom().getFirstName());
-            System.out.println("Last name:" + update.getMessage().getFrom().getLastName());
-            System.out.println("User id:" + update.getMessage().getFrom().getId());
-            System.out.println("Chat_id:" + update.getMessage().getChatId());
-            System.out.println();
-
             String message_text = update.getMessage().getText();
             long chat_id = update.getMessage().getChatId();
             long user_id = update.getMessage().getFrom().getId();
