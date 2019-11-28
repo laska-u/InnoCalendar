@@ -1,5 +1,4 @@
-**Use case scenarios**
-# Use case 
+# Use case scenarios
 This document describes all the use cases and their interactions
 
 ## Start bot
