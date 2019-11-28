@@ -2,7 +2,7 @@
 
 | Use case #1 | #User starts the bot |
 | --- | --- |
-| Actors | Student, Bot |
+| Actors | Student |
 | Pre-conditions | The student must have a telegram account </br> The elective course schedule should be available on Google sheets |
 | Flow of Events | 1. The user sends the initiating command to the Telegram bot </br> 2.<a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L85-L111"> Telegram verifies if the user sent the right command </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L85-L111"> Telegram bot responds by sending a list of UI elements to choose course, view entire elective course sheet </a>
 | Post-conditions | User is registered in InnoCalendat bot |
@@ -12,7 +12,7 @@
 
 | Use case #2 | #View entire elective course schedule |
 | --- | --- |
-| Actors | Student,Telegram bot |
+| Actors | Student |
 | Pre-condition | Students sends the right command to initiate communication with bot |
 | Flow of Events | 1. The student clicks on the button to view all courses </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L153-L162"> The telegram bot sends a link to the google sheet containing elective course </a> |
 | Post-conditions | User gets link for google sheet of entire elective course |
@@ -22,7 +22,7 @@
 
 | Use case #3 | #User  wants to choose an elective courses in order to get notifications |
 | --- | --- |
-| Actors | Student, Telegram bot |
+| Actors | Student |
 | Pre-condition | User sends the right command to initiate communication with bot <br> Course to be registered by student exists |
 | Flow of Events | 1. The student initiates communication with telegram bot </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L188-L200"> Telegram bot sends lists of buttons to choose exact course for notifications </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L115-L131"> When the user is provided with the intended course, the user can register for it by clicking on the course button. User can click on course button again to cancel registration for this course. </a> </br> |
 | Post-conditions | Information about user's choice saved in internal database |
@@ -32,7 +32,7 @@
 
 | Use case #4.1 | #The bot sends notifications when Admin makes changes in the elective course schedule on the Google Sheet |
 | --- | --- |
-| Actors | Telegram bot, Admin, Student |
+| Actors | Admin, Student |
 | Pre-condition | Google Sheets to be modified exist </br> Telegram bot must have stored elective course schedule in the database </br> Students must be registered for the course to be notified |
 | Flow of Events | 1. The Admin modifies record on the Google Sheet to elective course schedule </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/implementation_mvp/src/main/java/Bot.java#L65-L80"> The Telegram bot at every 30 min interval scans the elective course google sheet and compares it against the stored information in the database </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/implementation_mvp/src/main/java/Parser.java#L161-L171"> If the Telegram notices any change </a> between the database and the google sheets, it sends a notification to user about changes |
 | Post-conditions | Telegram bot notices the change between the google sheet and the database and sends notification |
@@ -42,7 +42,7 @@
 
 | Use case #4.2 | #The bot sends notifications one hour before commencement of elective course |
 | --- | --- |
-| Actors | Telegram bot, Student |
+| Actors | Telegram bot |
 | Pre-condition | Students must be registered for the course to be notified |
 | Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Parser.java#L128-L195"> The telegram bot scans the database every 5 min </a> </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L44-L49"> If after scanning the database, the bot notices that a course is scheduled to start in an hour, the telegram bot sends a notification to students that registered for that course </br> 3. A notification with the course details are sent to the user </a> |
 | Post-conditions | Notification is sent by telegram bot to user&#39;s(student) phone |
@@ -51,7 +51,7 @@
 
 | Use case #5 | #User  wants to unsubscribe from the bot |
 | --- | --- |
-| Actors | Student,Telegram bot |
+| Actors | Student |
 | Pre-condition | Student subscribed to the bot to get notification about the elective course schedule |
 | Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L151-L153"> Student initiates deletion </br><a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L154-L156"> 2. Student confirms the unsubscription </br> 3.Bot will unsubscribe the user </br> 4.Bot deletes student’s data from the database </br> |
 | Post-conditions | Chat with Bot will be deleted from Student’s telegram account |
