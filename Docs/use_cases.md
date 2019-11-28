@@ -31,7 +31,8 @@ This document describes all the use cases and their interactions
 | UC3 | #User  wants to choose an elective courses in order to get notifications |
 | Actors | Student |
 | Pre-condition | User sends the right command to initiate communication with bot <br> Course to be registered by student exists |
-| Flow of Events | 1. The student initiates communication with telegram bot </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L188-L200"> Telegram bot sends lists of buttons to choose exact course for notifications </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L115-L131"> When the user is provided with the intended course, the user can register for it by clicking on the course button. User can click on course button again to cancel registration for this course. </a> </br> |
+| Flow of Events | 1. The student initiates communication with telegram bot </br> 2. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L188-L200"> Telegram bot sends lists of buttons to choose exact course for notifications </a> </br> 3. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L115-L131"> When the user is provided with the intended course, the user can register for it by clicking on the course button. User can click on course button again to cancel registration for this course. </a> </br>
+4. Include UC4.2|
 | Post-conditions | Information about user's choice saved in internal database |
 | Alternate flows and exceptions | Telegram bot fails to save user's choice details into database because the phone was out of network coverage  |
 | Assumption | The course intended to be registered for is found |
@@ -68,6 +69,9 @@ This document describes all the use cases and their interactions
 | Post-conditions | Chat with Bot will be deleted from Student’s telegram account |
 | Alternate flows and exceptions | <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L157-L159"> Student doesn’t confirm the unsubscription |
 | Assumption | The student has a Telegram account |
+  
+## Use case diagram 
+![](use-case-diagram.png)
 
 **Appendix**
 
