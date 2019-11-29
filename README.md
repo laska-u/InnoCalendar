@@ -28,9 +28,22 @@ tag,
 put the password in the `<propery name="hibernate.connection.password">`
 (default is `postgres`).
 
-Put the database in the `<property name="hibernate.connection.url">` tag in the
-connection url. Additionally you can specify other connection details in the
-connection url.
+You need to create a new empty database in pgAdmin or console.
+Put the database connection url in the `<property name="hibernate.connection.url">` tag. 
+Additionally you can specify other connection details in the connection url.
+For instance, if you created the dabase with name `innocalendar` then the connection url should look like this: `jdbc:postgresql://localhost:5432/innocalendar`
+
+### Registering new bot
+Before running the server, a telegram new bot must be registered. To this follow the instruction below.
+
+1. Open chat with <a href="https://telegram.me/botfather">@BotFather</a> in Telegram
+2. Send commands `/start` and then `/newbot`
+3. Enter the name of the bot
+4. Enter the username of the bot
+5. You'll recieve the message with bot info and its token. Copy that token
+6. Put the token into the file `Bot.java` in the method `getBotToken()`
+
+More info can be found <a href="https://core.telegram.org/bots#6-botfather">here</a>.
 
 ### Building
 This application can be compiled using [https://github.com/apache/maven](Maven).
