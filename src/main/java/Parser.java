@@ -85,6 +85,8 @@ public class Parser {
         }
     }
 
+    // use case: Modify schedule 
+    // link to the description: https://bit.ly/2OVct7M
     public static List<Integer> getChangesCoursesIds() throws IOException, GeneralSecurityException {
 
         List<Integer> changesIds = new ArrayList<>();
@@ -123,7 +125,9 @@ public class Parser {
         return courses;
     }
 
-
+    // Send notification about class
+    // Step: scanning the schedule document 
+    // link to the description: https://bit.ly/34xV7Eh
     public static HashMap<Integer, String> getCoursesByDatetime() throws IOException, GeneralSecurityException {
         // Build a new authorized API client service.
         LocalDate localDate = LocalDate.now();

@@ -78,6 +78,9 @@ public class Bot extends TelegramLongPollingBot {
                     e.printStackTrace();
                 }
                 try {
+                    // Send notification about class
+                    // Step: send notification when it is time to
+                    // link to the description: https://bit.ly/34xV7Eh
                     HashMap<Integer, String> currentCourses = Parser.getCoursesByDatetime();
                     for (User user : userService.findAllUsers()) {
                         for (int courseId : currentCourses.keySet()) {
@@ -86,6 +89,8 @@ public class Bot extends TelegramLongPollingBot {
                             }
                         }
                     }
+                // use case: Modify schedule 
+                // link to the description: https://bit.ly/2OVct7M
                 //Start checking changes if 6 reminders passed by, because 6*300000 = 30 min
                 reminders_count++;
                     if (reminders_count == 6) {
@@ -126,6 +131,9 @@ public class Bot extends TelegramLongPollingBot {
             long user_id = update.getMessage().getFrom().getId();
 
             User user = userService.findUser(user_id);
+
+            //Start Bot Use Case 
+            //link to the description: https://bit.ly/2DpYlxQ
             if (user != null || message_text.equals("/start")) {
                 switch (message_text) {
                     case "/start":
@@ -135,12 +143,16 @@ public class Bot extends TelegramLongPollingBot {
                         }
                         return sendMenu(chat_id);
                     case "All courses":
+                        // View elective courses use cse 
+                        // link to the use case description: https://bit.ly/2QZQMWJ
                         return sendMsg(chat_id, SPREAD_SHEET);
                     case "Choose course":
                         return sendCourses(chat_id);
                     case "Finish choosing process":
                         sendMenu(chat_id);
                         break;
+                    // Unsubscribe from the bot use case 
+                    // link to the use case description: https://bit.ly/2XZtSA9
                     case "Unsubscribe":
                         return YNDialogue(chat_id);
                     case "Yes":
@@ -165,6 +177,8 @@ public class Bot extends TelegramLongPollingBot {
             }
 
             } else if (update.hasCallbackQuery()) {
+                // Assign selected course to the user and subscribe him/her
+                // link to the use case description: https://bit.ly/2R4rEOK
                 long course_id = Long.parseLong(update.getCallbackQuery().getData());
                 User user = userService.findUser(update.getCallbackQuery().getFrom().getId());
                 Course course = userService.getCourseById(user, course_id);
@@ -247,6 +261,8 @@ public class Bot extends TelegramLongPollingBot {
         return sendMessage;
     }
 
+    // Send buttons with courses 
+    // link to the use case description: https://bit.ly/2R4rEOK
     public synchronized void setButtons(SendMessage sendMessage, boolean isAdmin) {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
