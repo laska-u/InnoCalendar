@@ -64,7 +64,7 @@ This document describes all the use cases and their interactions
 | UC5 | #User  wants to unsubscribe from the bot |
 | Actors | Student |
 | Pre-condition | Student subscribed to the bot to get notification about the elective course schedule |
-| Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L151-L153"> Student initiates deletion </br><a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L154-L156"> 2. Student confirms the unsubscription </br> 3.Bot will unsubscribe the user </br> 4.Bot deletes student’s data from the database </br> |
+| Flow of Events | 1. <a href="https://github.com/laskaa/InnoCalendar/blob/master/src/main/java/Bot.java#L156-L157"> Student initiates deletion </br><a href="https://github.com/laskaa/InnoCalendar/blob/master/src/main/java/Bot.java#L158-L161"> 2. Student confirms the unsubscription </br> 3.Bot will unsubscribe the user </br> 4.Bot deletes student’s data from the database </br> |
 | Post-conditions | Chat with Bot will be deleted from Student’s telegram account |
 | Alternate flows and exceptions | <a href="https://github.com/laskaa/InnoCalendar/blob/848d3c61fcbc9e4e224872d7ed8fc0e9023a86db/src/main/java/Bot.java#L157-L159"> Student doesn’t confirm the unsubscription |
 | Assumption | The student has a Telegram account |
